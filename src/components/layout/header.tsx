@@ -2,12 +2,19 @@
 
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import type { RootState, AppDispatch } from "@/store/store";
+
+import type {
+  RootState,
+  AppDispatch,
+} from "@/store/store";
+
 import {
   loadSavedAgent,
   saveAgent,
   setCurrentAgent,
 } from "@/store/agentSlice";
+
+import { fetchTickets } from "@/store/ticketSlice";
 
 export function Header() {
   const dispatch = useDispatch<AppDispatch>();
@@ -17,18 +24,38 @@ export function Header() {
   );
 
   const currentAgentId = useSelector(
-    (state: RootState) => state.agent.currentAgentId,
+    (state: RootState) =>
+      state.agent.currentAgentId,
   );
+
+  const tickets = useSelector(
+    (state: RootState) =>
+      state.tickets.tickets,
+  );
+
+  const myTicketsCount = tickets.filter(
+    (ticket) =>
+      ticket.assigned_to === currentAgentId,
+  ).length;
+
+  const reviewCount = tickets.filter(
+    (ticket) =>
+      ticket.triage_decision === "manual_review",
+  ).length;
 
   useEffect(() => {
     const savedAgent = loadSavedAgent();
 
     if (
       savedAgent &&
-      agents.some((agent) => agent.id === savedAgent)
+      agents.some(
+        (agent) => agent.id === savedAgent,
+      )
     ) {
       dispatch(setCurrentAgent(savedAgent));
     }
+
+    dispatch(fetchTickets());
   }, [agents, dispatch]);
 
   return (
@@ -42,19 +69,23 @@ export function Header() {
 
         <div className="flex items-center gap-6">
           <div className="text-sm">
-            My tickets (0)
+            My tickets ({myTicketsCount})
           </div>
 
           <div className="text-sm">
-            To review (0)
+            To review ({reviewCount})
           </div>
 
           <select
             value={currentAgentId}
             onChange={(event) => {
-              const agentId = event.target.value;
+              const agentId =
+                event.target.value;
 
-              dispatch(setCurrentAgent(agentId));
+              dispatch(
+                setCurrentAgent(agentId),
+              );
+
               saveAgent(agentId);
             }}
             className="rounded-md border px-3 py-2 text-sm"
