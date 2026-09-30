@@ -23,3 +23,16 @@ The API is treated as the source of truth for ticket mutations. Rules such as va
 The test data is kept unchanged, including intentionally invalid values. An internal ticket `id` is added because `external_id` is not guaranteed to be unique.
 
 The ticket API remains paginated even though the UI is expected to display tickets as one continuous list. The frontend will fetch and merge pages rather than removing pagination from the API.
+
+## Phase 1 audit and fixes
+
+During the Phase 1 implementation, a few requirements were initially missed and were caught during an audit against the assignment.
+
+The ticket search initially covered the subject and identifiers but not the ticket body. Body search was added so the API searches both subject and body as required.
+
+The triage API initially allowed category or priority changes without requiring a reason. This was updated so changes require a written reason of at least 10 characters.
+
+The live updates endpoint was implemented first with update history, but the required simulated activity was initially missing. A server-side simulator was added to generate activity every 5–10 seconds, including new tickets and ticket updates. These changes are recorded in the update history and exposed through `/api/tickets/updates?since=`.
+
+The API was also checked against the intentionally invalid test cases. Invalid priority `P5` and invalid agent `agent-99` are rejected by the API rather than being handled only by the UI.
+
