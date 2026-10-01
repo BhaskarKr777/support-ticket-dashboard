@@ -4,7 +4,7 @@ This project is my submission for the Frontend Developer internship assignment.
 
 The goal is to build a support dashboard where agents can manage customer tickets, search and filter requests, claim tickets, update statuses, and review AI-generated triage decisions.
 
-**Live Demo:** [Deployed project link will be added here]
+**Live Demo:** https://support-ticket-dashboard-five-ochre.vercel.app/tickets
 
 **GitHub Repository:** [Support Ticket Dashboard](https://github.com/BhaskarKr777/support-ticket-dashboard)
 
