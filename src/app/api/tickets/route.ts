@@ -1,94 +1,157 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTickets } from "@/lib/ticket-store";
 import {
-    apiError,
-    simulateApiBehavior,
+  apiError,
+  simulateApiBehavior,
 } from "@/lib/api-utils";
 
-export async function GET(request: NextRequest) {
-    try {
-        await simulateApiBehavior();
+export async function GET(
+  request: NextRequest,
+) {
+  try {
+    await simulateApiBehavior();
 
-        const { searchParams } = request.nextUrl;
+    const { searchParams } =
+      request.nextUrl;
 
-        const page = Math.max(
-            Number(searchParams.get("page")) || 1,
-            1,
-        );
+    const page = Math.max(
+      Number(
+        searchParams.get("page") ?? "1",
+      ),
+      1,
+    );
 
-        const limit = Math.max(
-            Number(searchParams.get("limit")) || 50,
-            1,
-        );
+    const requestedLimit = Number(
+      searchParams.get("limit") ?? "100",
+    );
 
-        const search = searchParams
-            .get("search")
-            ?.trim()
-            .toLowerCase();
+    const limit = Math.min(
+      Math.max(
+        Number.isFinite(requestedLimit)
+          ? requestedLimit
+          : 100,
+        1,
+      ),
+      100,
+    );
 
-        const status = searchParams.get("status");
-        const priority = searchParams.get("priority");
-        const category = searchParams.get("category");
-        const triageDecision = searchParams.get("triage_decision");
+    const search = searchParams
+      .get("search")
+      ?.trim()
+      .toLowerCase();
 
-        let tickets = getTickets();
+    const status =
+      searchParams.get("status");
 
-        if (status) {
-            tickets = tickets.filter(
-                (ticket) => ticket.status === status,
-            );
-        }
+    const priority =
+      searchParams.get("priority");
 
-        if (priority) {
-            tickets = tickets.filter(
-                (ticket) => ticket.priority === priority,
-            );
-        }
+    const category =
+      searchParams.get("category");
 
-        if (category) {
-            tickets = tickets.filter(
-                (ticket) => ticket.category === category,
-            );
-        }
+    const triageDecision =
+      searchParams.get(
+        "triage_decision",
+      );
 
-        if (triageDecision) {
-            tickets = tickets.filter(
-                (ticket) =>
-                    ticket.triage_decision === triageDecision,
-            );
-        }
+    let tickets = getTickets();
 
-        if (search) {
-            tickets = tickets.filter((ticket) => {
-                return (
-                    ticket.subject.toLowerCase().includes(search) ||
-                    (ticket.body?.toLowerCase().includes(search) ?? false) ||
-                    ticket.external_id.toLowerCase().includes(search) ||
-                    ticket.customer_id.toLowerCase().includes(search)
-                );
-            });
-        }
+    /*
+     * Server-side filters
+     */
 
-        const total = tickets.length;
-
-        const start = (page - 1) * limit;
-        const end = start + limit;
-
-        const paginatedTickets = tickets.slice(start, end);
-
-        return NextResponse.json({
-            tickets: paginatedTickets,
-            pagination: {
-                page,
-                limit,
-                total,
-                total_pages: Math.ceil(total / limit),
-            },
-        });
-    } catch {
-        return apiError(
-            "Unable to fetch tickets",
-            500,
-        );
+    if (status) {
+      tickets = tickets.filter(
+        (ticket) =>
+          ticket.status === status,
+      );
     }
+
+    if (priority) {
+      tickets = tickets.filter(
+        (ticket) =>
+          ticket.priority === priority,
+      );
+    }
+
+    if (category) {
+      tickets = tickets.filter(
+        (ticket) =>
+          ticket.category === category,
+      );
+    }
+
+    if (triageDecision) {
+      tickets = tickets.filter(
+        (ticket) =>
+          ticket.triage_decision ===
+          triageDecision,
+      );
+    }
+
+    /*
+     * Search subject, body,
+     * external ID and customer ID.
+     */
+
+    if (search) {
+      tickets = tickets.filter(
+        (ticket) => {
+          return (
+            ticket.subject
+              .toLowerCase()
+              .includes(search) ||
+            (ticket.body
+              ?.toLowerCase()
+              .includes(search) ??
+              false) ||
+            ticket.external_id
+              .toLowerCase()
+              .includes(search) ||
+            ticket.customer_id
+              .toLowerCase()
+              .includes(search)
+          );
+        },
+      );
+    }
+
+    /*
+     * Pagination
+     *
+     * The API never returns more
+     * than 100 tickets per request.
+     */
+
+    const total = tickets.length;
+
+    const totalPages =
+      Math.ceil(total / limit);
+
+    const safePage = Math.min(
+      page,
+      Math.max(totalPages, 1),
+    );
+
+    const start =
+      (safePage - 1) * limit;
+
+    const end = start + limit;
+
+    const paginatedTickets =
+      tickets.slice(start, end);
+
+    return NextResponse.json({
+      tickets: paginatedTickets,
+      total,
+      page: safePage,
+      limit,
+      totalPages,
+    });
+  } catch {
+    return apiError(
+      "Unable to fetch tickets",
+      500,
+    );
+  }
 }

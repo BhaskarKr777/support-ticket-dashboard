@@ -76,34 +76,37 @@ The backend is a small fake API built inside the Next.js application using Route
 
 ### Phase 2 — App Shell and Shared State
 
-- [ ] Create dashboard layout
-- [ ] Create header and navigation
-- [ ] Set up Redux store
-- [ ] Add shared agent selection
-- [ ] Add agent dropdown
-- [ ] Persist selected agent
-- [ ] Add My Tickets count
-- [ ] Add To Review count
+- [x] Create dashboard layout
+- [x] Create header and navigation
+- [x] Set up Redux store
+- [x] Add shared agent selection
+- [x] Add agent dropdown
+- [x] Persist selected agent
+- [x] Add My Tickets count
+- [x] Add To Review count
 
 ### Phase 3 — Ticket List
 
-- [ ] Build ticket list page
-- [ ] Add ticket table/list structure
-- [ ] Add search input
-- [ ] Debounce search
-- [ ] Add status filter
-- [ ] Add priority filter
-- [ ] Add category filter
-- [ ] Add AI decision filter
-- [ ] Persist filters in Redux
-- [ ] Sync filters with the URL
-- [ ] Add loading state
-- [ ] Add empty state
-- [ ] Add error and retry state
-- [ ] Add deadline countdown
-- [ ] Add on-track, at-risk and late states
-- [ ] Handle large ticket lists
-- [ ] Make the list responsive
+- [x] Build ticket list page
+- [x] Add ticket table/list structure
+- [x] Add search input
+- [x] Debounce search
+- [x] Add status filter
+- [x] Add priority filter
+- [x] Add category filter
+- [x] Add AI decision filter
+- [x] Persist filters in Redux
+- [x] Sync filters with the URL
+- [x] Add loading state
+- [x] Add empty state
+- [x] Add error and retry state
+- [x] Add deadline countdown
+- [x] Add on-track, at-risk and late states
+- [x] Handle large ticket lists
+- [x] Make the list responsive
+- [x] Support continuous scrolling through paginated API results
+- [x] Prevent duplicate tickets when loading additional pages
+- [x] Verify 375px mobile layout
 
 ### Phase 4 — Ticket Details
 
@@ -162,10 +165,18 @@ The backend is a small fake API built inside the Next.js application using Route
 - [ ] Run production build
 - [ ] Run Lighthouse on mobile
 - [ ] Capture Lighthouse screenshot
-- [ ] Test at 375px width
-- [ ] Complete README
+- [x] Test at 375px width
+- [x] Update README
 - [ ] Complete DECISIONS.md
 - [ ] Final walkthrough and cleanup
+
+## Current Status
+
+Phase 0, Phase 1, Phase 2 and Phase 3 are complete.
+
+The current implementation includes the fake API, generated ticket dataset, Redux state, agent selection, ticket statistics, ticket filtering/search, URL-persisted filters, pagination with continuous scrolling, and live SLA countdowns.
+
+The next phase focuses on the individual ticket page, claiming, status changes, optimistic updates, and customer-controlled content security.
 
 ## Getting Started
 

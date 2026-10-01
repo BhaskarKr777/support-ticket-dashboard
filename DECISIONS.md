@@ -36,3 +36,15 @@ The live updates endpoint was implemented first with update history, but the req
 
 The API was also checked against the intentionally invalid test cases. Invalid priority `P5` and invalid agent `agent-99` are rejected by the API rather than being handled only by the UI.
 
+## Ticket list performance
+
+Initially, the ticket list loaded and rendered all 5,000 tickets at the same time.
+
+This caused noticeable lag because the browser had to process and render thousands of table rows at once.
+
+This was identified during manual testing with the 5,000-ticket dataset.
+
+To improve performance, the API is limited to a maximum of 100 tickets per request. The frontend initially loads 100 tickets and loads additional pages as the user scrolls.
+
+This keeps the API paginated and reduces the amount of data rendered at one time while still allowing the UI to behave like one continuous ticket list.
+

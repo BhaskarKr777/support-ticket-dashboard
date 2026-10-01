@@ -1,94 +1,113 @@
 "use client";
 
-import { useEffect } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import type {
-  RootState,
   AppDispatch,
+  RootState,
 } from "@/store/store";
 
 import {
-  loadSavedAgent,
-  saveAgent,
   setCurrentAgent,
+  saveAgent,
 } from "@/store/agentSlice";
 
-import { fetchTickets } from "@/store/ticketSlice";
-
 export function Header() {
-  const dispatch = useDispatch<AppDispatch>();
-
-  const agents = useSelector(
-    (state: RootState) => state.agent.agents,
-  );
+  const dispatch =
+    useDispatch<AppDispatch>();
 
   const currentAgentId = useSelector(
     (state: RootState) =>
       state.agent.currentAgentId,
   );
 
-  const tickets = useSelector(
+  const agents = useSelector(
     (state: RootState) =>
-      state.tickets.tickets,
+      state.agent.agents,
   );
 
-  const myTicketsCount = tickets.filter(
-    (ticket) =>
-      ticket.assigned_to === currentAgentId,
-  ).length;
+  const [myTicketsCount, setMyTicketsCount] =
+    useState(0);
 
-  const reviewCount = tickets.filter(
-    (ticket) =>
-      ticket.triage_decision === "manual_review",
-  ).length;
+  const [reviewCount, setReviewCount] =
+    useState(0);
 
   useEffect(() => {
-    const savedAgent = loadSavedAgent();
+    async function loadStats() {
+      try {
+        const response = await fetch(
+          `/api/tickets/stats?agent_id=${currentAgentId}`,
+        );
 
-    if (
-      savedAgent &&
-      agents.some(
-        (agent) => agent.id === savedAgent,
-      )
-    ) {
-      dispatch(setCurrentAgent(savedAgent));
+        if (!response.ok) {
+          throw new Error(
+            "Failed to load stats",
+          );
+        }
+
+        const data =
+          await response.json();
+
+        setMyTicketsCount(
+          data.myTickets,
+        );
+
+        setReviewCount(
+          data.toReview,
+        );
+      } catch {
+        // Keep the previous counts if
+        // the simulated API request fails.
+      }
     }
 
-    dispatch(fetchTickets());
-  }, [agents, dispatch]);
+    loadStats();
+  }, [currentAgentId]);
+
+  function handleAgentChange(
+    event: React.ChangeEvent<HTMLSelectElement>,
+  ) {
+    const agentId =
+      event.target.value;
+
+    dispatch(
+      setCurrentAgent(agentId),
+    );
+
+    saveAgent(agentId);
+  }
 
   return (
     <header className="border-b bg-white">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-        <div>
-          <h1 className="text-lg font-semibold">
-            Support Dashboard
-          </h1>
-        </div>
+      <div className="mx-auto flex min-h-16 w-full max-w-[1600px] items-center justify-between gap-4 px-4">
+        <Link
+          href="/tickets"
+          className="font-semibold"
+        >
+          Support Dashboard
+        </Link>
 
-        <div className="flex items-center gap-6">
-          <div className="text-sm">
+        <nav className="flex items-center gap-4">
+          <Link
+            href="/tickets"
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
             My tickets ({myTicketsCount})
-          </div>
+          </Link>
 
-          <div className="text-sm">
+          <Link
+            href="/review"
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
             To review ({reviewCount})
-          </div>
+          </Link>
 
           <select
             value={currentAgentId}
-            onChange={(event) => {
-              const agentId =
-                event.target.value;
-
-              dispatch(
-                setCurrentAgent(agentId),
-              );
-
-              saveAgent(agentId);
-            }}
-            className="rounded-md border px-3 py-2 text-sm"
+            onChange={handleAgentChange}
+            className="h-9 rounded-md border px-3 text-sm"
           >
             {agents.map((agent) => (
               <option
@@ -99,7 +118,7 @@ export function Header() {
               </option>
             ))}
           </select>
-        </div>
+        </nav>
       </div>
     </header>
   );
