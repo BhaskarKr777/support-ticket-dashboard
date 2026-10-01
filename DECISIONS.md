@@ -48,3 +48,20 @@ To improve performance, the API is limited to a maximum of 100 tickets per reque
 
 This keeps the API paginated and reduces the amount of data rendered at one time while still allowing the UI to behave like one continuous ticket list.
 
+## Customer-controlled content
+
+Ticket subjects, bodies, AI summaries and attachment URLs are treated as untrusted input.
+
+Customer-provided HTML is sanitized before rendering, and unsafe attachment URLs such as `javascript:` are blocked instead of being rendered as clickable links.
+
+This was done specifically to handle the intentionally unsafe test cases in the assignment without allowing customer-controlled content to execute code in the dashboard.
+
+## CSS and Project Structure
+
+Due to the limited time available before submission, the styling has been kept basic. The focus was on implementing the required functionality, handling API validation, managing ticket data, and covering the important edge cases from the assignment.
+
+The current UI uses basic CSS and Tailwind utility classes to provide a consistent layout and usable interface across the ticket list and detail pages. However, the visual design has not been fully polished, and some areas could benefit from improved spacing, responsiveness, and visual consistency.
+
+The project file structure is also not fully optimized. Files and components are organized sufficiently for the current implementation, but the structure could be improved further by refining component boundaries, grouping related logic more consistently, and removing any unnecessary duplication.
+
+Given the deadline, I prioritized completing the core functionality and handling the assignment's key requirements over extensive UI refinement and architectural cleanup. These areas remain opportunities for improvement.

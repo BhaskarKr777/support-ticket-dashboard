@@ -2,185 +2,320 @@
 
 This project is my submission for the Frontend Developer internship assignment.
 
-The goal is to build a support dashboard where agents can view tickets, search and filter them, claim tickets, update their status, and review AI triage decisions.
+The goal is to build a support dashboard where agents can manage customer tickets, search and filter requests, claim tickets, update statuses, and review AI-generated triage decisions.
+
+**Live Demo:** [Deployed project link will be added here]
+
+**GitHub Repository:** [Support Ticket Dashboard](https://github.com/BhaskarKr777/support-ticket-dashboard)
 
 ## Tech Stack
 
-- Next.js with App Router
-- React
-- TypeScript
-- Tailwind CSS
-- shadcn/ui
-- Redux Toolkit
+* Next.js with App Router
+* React
+* TypeScript
+* Tailwind CSS
+* shadcn/ui
+* Redux Toolkit
+* Next.js Route Handlers for the fake API
 
-## What the project covers
+## Features Implemented
 
-The dashboard is being built around the requirements given in the assignment.
+### Dashboard and Navigation
 
-The main parts are:
+* Shared dashboard layout and navigation
+* Agent selection with local persistence
+* My Tickets and To Review counts
+* Ticket statistics based on the selected agent and review status
 
-- Ticket list with search and filters
-- Ticket details
-- Ticket claiming
-- Ticket status changes
-- AI review queue
-- Re-running AI triage
-- Live ticket updates
-- Bulk actions
-- Agent selection
-- Ticket deadline tracking
-- Responsive layout
+### Ticket List
 
-The backend is a small fake API built inside the Next.js application using Route Handlers. Ticket data is kept in memory as required by the assignment.
+* Search tickets by relevant ticket content
+* Filter by status, priority, category, and AI triage decision
+* Debounced search to reduce unnecessary API requests
+* Synchronize filters with URL query parameters
+* Paginated API with continuous scrolling
+* Prevent duplicate tickets when loading additional pages
+* Loading, error, retry, and empty states
+* SLA deadline countdowns with on-track, at-risk, and late states
+* Responsive layout, including support for a 375px mobile viewport
+
+### Ticket Details
+
+* Display ticket, customer, and AI triage information
+* Compare AI-assigned priority with the final priority
+* Claim tickets with optimistic UI updates and rollback on failure
+* Handle claim conflicts
+* Update ticket status with server-side transition validation
+* Re-run AI triage through a server-side API proxy
+* Safely render customer-provided HTML
+* Block unsafe attachment URLs
+* Handle missing tickets and API errors
+
+### Fake API and Data
+
+* In-memory ticket store
+* Approximately 5,000 generated tickets
+* Assignment-provided test tickets
+* Simulated API latency and request failures
+* Claim conflict simulation
+* Server-side validation for ticket mutations
+* Ticket update history and simulated live activity
+* Server-side triage API key handling
 
 ## Development Phases
 
 ### Phase 0 — Project Foundation
 
-- [x] Review assignment requirements
-- [x] Identify unclear and conflicting requirements
-- [x] Decide project architecture
-- [x] Create Next.js project
-- [x] Set up TypeScript and App Router
-- [x] Set up Tailwind CSS and shadcn/ui
-- [x] Set up Redux Toolkit
-- [x] Create initial project documentation
+* [x] Review assignment requirements
+* [x] Identify unclear and conflicting requirements
+* [x] Decide project architecture
+* [x] Create Next.js project
+* [x] Set up TypeScript and App Router
+* [x] Set up Tailwind CSS and shadcn/ui
+* [x] Set up Redux Toolkit
+* [x] Create initial project documentation
 
 ### Phase 1 — Fake API and Data Foundation
 
-- [x] Create ticket types
-- [x] Add assignment-provided test tickets
-- [x] Generate approximately 5,000 tickets
-- [x] Create in-memory ticket store
-- [x] Create ticket listing API
-- [x] Add pagination
-- [x] Add search by subject and body
-- [x] Add status, priority, category and AI decision filters
-- [x] Add simulated API latency
-- [x] Add simulated API failures
-- [x] Create ticket details API
-- [x] Create claim API
-- [x] Add claim conflict handling
-- [x] Create status update API
-- [x] Validate allowed status transitions
-- [x] Create triage update API
-- [x] Validate triage changes and review reasons
-- [x] Enforce Enterprise priority rules server-side
-- [x] Validate agent IDs server-side
-- [x] Create re-triage API
-- [x] Keep the triage API key server-side
-- [x] Create live update history
-- [x] Create `/api/tickets/updates?since=`
-- [x] Add simulated live ticket activity every 5–10 seconds
-- [x] Test intentionally invalid API inputs
+* [x] Create ticket types and test data
+* [x] Generate approximately 5,000 tickets
+* [x] Create the in-memory ticket store
+* [x] Create ticket listing and details APIs
+* [x] Add pagination, search, and filters
+* [x] Add simulated latency and failures
+* [x] Create ticket claim and status update APIs
+* [x] Validate allowed status transitions
+* [x] Handle claim conflicts
+* [x] Create triage update and re-triage APIs
+* [x] Validate triage changes and review reasons
+* [x] Enforce Enterprise priority rules server-side
+* [x] Validate agent IDs server-side
+* [x] Keep the triage API key server-side
+* [x] Create ticket update history
+* [x] Create the live updates endpoint
+* [x] Add simulated ticket activity
+* [x] Test intentionally invalid API inputs
 
 ### Phase 2 — App Shell and Shared State
 
-- [x] Create dashboard layout
-- [x] Create header and navigation
-- [x] Set up Redux store
-- [x] Add shared agent selection
-- [x] Add agent dropdown
-- [x] Persist selected agent
-- [x] Add My Tickets count
-- [x] Add To Review count
+* [x] Create dashboard layout
+* [x] Create header and navigation
+* [x] Configure the Redux store
+* [x] Add shared agent selection
+* [x] Add agent dropdown and persistence
+* [x] Display My Tickets count
+* [x] Display To Review count
 
 ### Phase 3 — Ticket List
 
-- [x] Build ticket list page
-- [x] Add ticket table/list structure
-- [x] Add search input
-- [x] Debounce search
-- [x] Add status filter
-- [x] Add priority filter
-- [x] Add category filter
-- [x] Add AI decision filter
-- [x] Persist filters in Redux
-- [x] Sync filters with the URL
-- [x] Add loading state
-- [x] Add empty state
-- [x] Add error and retry state
-- [x] Add deadline countdown
-- [x] Add on-track, at-risk and late states
-- [x] Handle large ticket lists
-- [x] Make the list responsive
-- [x] Support continuous scrolling through paginated API results
-- [x] Prevent duplicate tickets when loading additional pages
-- [x] Verify 375px mobile layout
+* [x] Build the ticket list page
+* [x] Add search and filters
+* [x] Debounce search
+* [x] Synchronize filters with the URL
+* [x] Add loading, empty, error, and retry states
+* [x] Add SLA deadline countdowns
+* [x] Handle large ticket lists through pagination
+* [x] Implement continuous scrolling
+* [x] Prevent duplicate tickets across pages
+* [x] Make the list responsive
+* [x] Verify the 375px mobile layout
 
 ### Phase 4 — Ticket Details
 
-- [ ] Build ticket details page
-- [ ] Display customer and ticket information
-- [ ] Display AI summary and decision
-- [ ] Show AI priority vs final priority when different
-- [ ] Safely render customer-provided HTML
-- [ ] Validate attachment URLs
-- [ ] Add optimistic ticket claiming
-- [ ] Roll back failed claims
-- [ ] Prevent duplicate requests
-- [ ] Add status changes
-- [ ] Handle another agent claiming a ticket
-- [ ] Add re-run AI action
-- [ ] Add proper not-found handling
+* [x] Build the ticket details page
+* [x] Display customer and ticket information
+* [x] Display AI summary and triage decision
+* [x] Show AI priority versus final priority when different
+* [x] Safely render customer-provided HTML
+* [x] Validate attachment URLs
+* [x] Implement optimistic ticket claiming
+* [x] Roll back failed claims
+* [x] Handle claim conflicts
+* [x] Add ticket status changes
+* [x] Prevent duplicate mutation requests
+* [x] Add the re-run AI action
+* [x] Keep the triage API key server-side
+* [x] Handle missing tickets and API errors
 
 ### Phase 5 — AI Review Queue
 
-- [ ] Build `/review`
-- [ ] Show tickets requiring manual review
-- [ ] Display AI category, priority, summary and reason
-- [ ] Add Accept AI action
-- [ ] Add category changes
-- [ ] Add priority changes
-- [ ] Require a reason for manual changes
-- [ ] Validate review input
-- [ ] Enforce Enterprise priority rules
-- [ ] Remove handled tickets from the review queue
+* [ ] Build the `/review` page
+* [ ] Display tickets requiring manual review
+* [ ] Show AI category, priority, summary, and review reason
+* [ ] Add the Accept AI action
+* [ ] Allow category and priority changes
+* [ ] Require a reason for manual changes
+* [ ] Validate review input
+* [ ] Enforce Enterprise priority rules
+* [ ] Remove handled tickets from the review queue
 
 ### Phase 6 — Live Updates and Bulk Actions
 
-- [ ] Add polling for live ticket updates
-- [ ] Document polling frequency and reasoning
-- [ ] Prevent new tickets from unexpectedly jumping into the list
-- [ ] Add "new tickets" notification
-- [ ] Handle new arrivals without duplicates or skipped tickets
-- [ ] Add multi-ticket selection
-- [ ] Add bulk claim
-- [ ] Add bulk status changes
-- [ ] Handle partial success and failure
-- [ ] Show per-ticket results
-- [ ] Keep successful changes
-- [ ] Allow undo for failed operations
+* [ ] Add polling for live ticket updates
+* [ ] Document the polling frequency and reasoning
+* [ ] Prevent new tickets from unexpectedly jumping into the list
+* [ ] Add a notification for new tickets
+* [ ] Handle new arrivals without duplicates or skipped updates
+* [ ] Add multi-ticket selection
+* [ ] Implement bulk claim
+* [ ] Implement bulk status changes
+* [ ] Handle partial successes and failures
+* [ ] Show per-ticket operation results
+* [ ] Preserve successful changes
+* [ ] Support undo or recovery for failed operations
 
-### Phase 7 — Testing, Performance and Final Review
+### Phase 7 — Testing, Performance, and Final Review
 
-- [ ] Add meaningful automated tests
-- [ ] Keep tests independent from random fake API failures
-- [ ] Test tricky ticket cases
-- [ ] Check loading, failure and mutation states
-- [ ] Check customer-provided content safety
-- [ ] Check server-side validation
-- [ ] Optimize unnecessary row re-renders
-- [ ] Check search performance
-- [ ] Run production build
-- [ ] Run Lighthouse on mobile
-- [ ] Capture Lighthouse screenshot
-- [x] Test at 375px width
-- [x] Update README
-- [ ] Complete DECISIONS.md
-- [ ] Final walkthrough and cleanup
+* [ ] Add meaningful automated tests
+* [ ] Keep tests independent of random fake API failures
+* [ ] Test the assignment's tricky ticket cases
+* [ ] Check loading, error, and mutation states
+* [ ] Verify customer-content safety
+* [ ] Verify server-side validation
+* [ ] Optimize unnecessary row re-renders
+* [ ] Check search performance
+* [ ] Run the production build
+* [ ] Run Lighthouse on mobile
+* [ ] Capture a Lighthouse screenshot
+* [x] Verify the 375px mobile layout
+* [ ] Complete `DECISIONS.md`
+* [ ] Perform a final walkthrough and cleanup
 
 ## Current Status
 
-Phase 0, Phase 1, Phase 2 and Phase 3 are complete.
+**Completed:** Phases 0–4
 
-The current implementation includes the fake API, generated ticket dataset, Redux state, agent selection, ticket statistics, ticket filtering/search, URL-persisted filters, pagination with continuous scrolling, and live SLA countdowns.
+The project currently includes the dashboard shell, shared agent selection, ticket statistics, a searchable and filterable ticket list, URL-synchronized filters, paginated loading, SLA countdowns, ticket details, optimistic claiming, status updates, AI triage information, safe customer-content rendering, and the re-run AI action.
 
-The next phase focuses on the individual ticket page, claiming, status changes, optimistic updates, and customer-controlled content security.
+The next phase is the AI Review Queue. Live updates, bulk actions, automated testing, performance checks, and final deployment-related verification remain on the roadmap.
+
+The current deployment is planned at the end of Phase 4 so that a working version can be shared while the remaining features are developed.
 
 ## Getting Started
 
-Clone the repository and install the dependencies:
+### Prerequisites
+
+* Node.js and npm
+* Git
+
+### Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/BhaskarKr777/support-ticket-dashboard.git
+cd support-ticket-dashboard
+```
+
+Install dependencies:
 
 ```bash
 npm install
+```
+
+### Environment Variables
+
+Create a `.env.local` file in the project root:
+
+```env
+TRIAGE_API_KEY=your-test-key
+```
+
+Use the test key expected by your local fake triage integration. Keep this variable server-side. Do not rename it to `NEXT_PUBLIC_TRIAGE_API_KEY` or expose its value in client-side code.
+
+Do not commit `.env.local` or real secrets to GitHub.
+
+### Run the Development Server
+
+```bash
+npm run dev
+```
+
+Open http://localhost:3000 in your browser.
+
+### Useful Commands
+
+```bash
+# Start the development server
+npm run dev
+
+# Run ESLint
+npm run lint
+
+# Check TypeScript types
+npx tsc --noEmit
+
+# Create a production build
+npm run build
+```
+
+## Main Routes
+
+| Route           | Description                                  |
+| --------------- | -------------------------------------------- |
+| `/tickets`      | Ticket list, search, filters, and pagination |
+| `/tickets/[id]` | Ticket details and available actions         |
+| `/review`       | AI review queue (Phase 5)                    |
+
+## API Endpoints
+
+| Method  | Endpoint                           | Purpose                                    |
+| ------- | ---------------------------------- | ------------------------------------------ |
+| `GET`   | `/api/tickets`                     | List, search, filter, and paginate tickets |
+| `GET`   | `/api/tickets/[id]`                | Retrieve ticket details                    |
+| `POST`  | `/api/tickets/[id]/claim`          | Claim a ticket                             |
+| `PATCH` | `/api/tickets/[id]/status`         | Update ticket status                       |
+| `PATCH` | `/api/tickets/[id]/triage`         | Update triage information                  |
+| `POST`  | `/api/tickets/[id]/retriage`       | Re-run AI triage                           |
+| `POST`  | `/api/tickets/[id]/retriage-proxy` | Server-side proxy for re-triage            |
+| `GET`   | `/api/tickets/stats`               | Retrieve agent and review statistics       |
+| `GET`   | `/api/tickets/updates?since=`      | Retrieve ticket updates since a timestamp  |
+
+The fake API simulates network latency and intermittent failures to make the dashboard behave more like an application communicating with a remote service.
+
+## Implementation Notes
+
+* Ticket data is held in memory, so changes may reset when the server restarts.
+* The fake API is intended for this assignment, not as a production backend.
+* Redux Toolkit manages shared client state, including agent selection, ticket data, and filters.
+* Ticket filtering is reflected in URL query parameters so filtered views can be shared.
+* Customer-provided HTML is sanitized before rendering.
+* Attachment URLs are checked before they are rendered as links.
+* Sensitive triage configuration stays on the server.
+
+## Project Structure
+
+```text
+src/
+├── app/
+│   ├── api/
+│   │   └── tickets/
+│   ├── tickets/
+│   │   └── [id]/
+│   ├── review/
+│   └── ...
+├── components/
+│   ├── layout/
+│   ├── tickets/
+│   └── ui/
+├── data/
+├── lib/
+├── store/
+└── types/
+```
+
+## Design and Technical Decisions
+
+Important implementation choices, trade-offs, and assignment-specific decisions are documented in [`DECISIONS.md`](./DECISIONS.md).
+
+## Deployment
+
+**Live application:** [Add deployed URL here]
+
+The deployment will be updated as the remaining assignment phases are completed.
+
+## Author
+
+**Bhaskar Kumar**
+
+B.Tech Computer Science and Engineering student, Siliguri Institute of Technology.

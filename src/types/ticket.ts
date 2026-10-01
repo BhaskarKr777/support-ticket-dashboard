@@ -29,6 +29,7 @@ export interface Ticket {
 
   category: string;
   priority: TicketPriority;
+  ai_priority?: TicketPriority;
 
   summary: string | null;
   triage_decision: TriageDecision;

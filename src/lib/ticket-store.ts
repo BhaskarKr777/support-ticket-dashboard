@@ -24,8 +24,14 @@ export function getTickets(): Ticket[] {
   return tickets;
 }
 
-export function getTicketById(id: string): Ticket | undefined {
-  return tickets.find((ticket) => ticket.id === id);
+export function getTicketById(id: string) {
+  return (
+    tickets.find(
+      (ticket) =>
+        ticket.id === id ||
+        ticket.external_id === id,
+    ) ?? null
+  );
 }
 
 export function updateTicket(

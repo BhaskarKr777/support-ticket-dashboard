@@ -1,123 +1,186 @@
+
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import type {
-  AppDispatch,
-  RootState,
-} from "@/store/store";
+import type { AppDispatch, RootState } from "@/store/store";
+import { setCurrentAgent } from "@/store/agentSlice";
 
-import {
-  setCurrentAgent,
-  saveAgent,
-} from "@/store/agentSlice";
+const agents = [
+  { id: "agent-1", name: "Priya" },
+  { id: "agent-2", name: "Rahul" },
+  { id: "agent-3", name: "Meera" },
+];
+
+type TicketStats = {
+  myTickets: number;
+  toReview: number;
+};
 
 export function Header() {
-  const dispatch =
-    useDispatch<AppDispatch>();
+  const dispatch = useDispatch<AppDispatch>();
+  const pathname = usePathname();
 
   const currentAgentId = useSelector(
-    (state: RootState) =>
-      state.agent.currentAgentId,
+    (state: RootState) => state.agent.currentAgentId,
   );
 
-  const agents = useSelector(
-    (state: RootState) =>
-      state.agent.agents,
-  );
-
-  const [myTicketsCount, setMyTicketsCount] =
-    useState(0);
-
-  const [reviewCount, setReviewCount] =
-    useState(0);
+  const [myTicketsCount, setMyTicketsCount] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function loadStats() {
       try {
         const response = await fetch(
-          `/api/tickets/stats?agent_id=${currentAgentId}`,
+          `/api/tickets/stats?agent_id=${encodeURIComponent(currentAgentId)}`,
+          {
+            cache: "no-store",
+            signal: controller.signal,
+          },
         );
 
-        if (!response.ok) {
-          throw new Error(
-            "Failed to load stats",
-          );
+        if (!response.ok) return;
+
+        const data: TicketStats = await response.json();
+
+        setMyTicketsCount(data.myTickets ?? 0);
+        setReviewCount(data.toReview ?? 0);
+      } catch (error) {
+        if (error instanceof Error && error.name !== "AbortError") {
+          console.error("Failed to load ticket statistics:", error);
         }
-
-        const data =
-          await response.json();
-
-        setMyTicketsCount(
-          data.myTickets,
-        );
-
-        setReviewCount(
-          data.toReview,
-        );
-      } catch {
-        // Keep the previous counts if
-        // the simulated API request fails.
       }
     }
 
     loadStats();
-  }, [currentAgentId]);
 
-  function handleAgentChange(
-    event: React.ChangeEvent<HTMLSelectElement>,
-  ) {
-    const agentId =
-      event.target.value;
+    return () => {
+      controller.abort();
+    };
+  }, [currentAgentId, pathname]);
 
-    dispatch(
-      setCurrentAgent(agentId),
-    );
+  const selectedAgent =
+    agents.find((agent) => agent.id === currentAgentId) ?? agents[0];
 
-    saveAgent(agentId);
+  function handleAgentChange(agentId: string) {
+    dispatch(setCurrentAgent(agentId));
   }
 
   return (
-    <header className="border-b bg-white">
-      <div className="mx-auto flex min-h-16 w-full max-w-[1600px] items-center justify-between gap-4 px-4">
+    <header className="sticky top-0 z-40 w-full border-b border-[#dfe3ed] bg-[#fffefa]">
+      <div className="mx-auto flex min-h-[68px] w-full max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
+        {/* Brand */}
         <Link
           href="/tickets"
-          className="font-semibold"
+          className="flex shrink-0 items-center gap-3"
+          aria-label="Support Dashboard home"
         >
-          Support Dashboard
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#e6e9f8] text-[#6569a9]">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              className="h-5 w-5"
+              aria-hidden="true"
+            >
+              <path
+                d="M4 13.5V11a8 8 0 0 1 16 0v2.5"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+              <rect
+                x="3"
+                y="12"
+                width="4"
+                height="6"
+                rx="2"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              />
+              <rect
+                x="17"
+                y="12"
+                width="4"
+                height="6"
+                rx="2"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              />
+              <path
+                d="M19 18a4 4 0 0 1-4 3h-3"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>
+
+          <span className="text-sm font-bold tracking-tight text-[#202943] sm:text-[15px]">
+            Support Dashboard
+          </span>
         </Link>
 
-        <nav className="flex items-center gap-4">
+        {/* Navigation */}
+        <nav
+          className="flex items-center gap-1 sm:gap-3"
+          aria-label="Main navigation"
+        >
           <Link
             href="/tickets"
-            className="text-sm text-muted-foreground hover:text-foreground"
+            aria-current={
+              pathname.startsWith("/tickets") ? "page" : undefined
+            }
+            className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${pathname.startsWith("/tickets")
+                ? "bg-[#e9eaf8] text-[#555b9b]"
+                : "text-[#65708a] hover:bg-[#f1f2f8]"
+              }`}
           >
-            My tickets ({myTicketsCount})
+            <span>My tickets</span>
+            <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold tabular-nums text-[#555b9b]">
+              {myTicketsCount.toLocaleString()}
+            </span>
           </Link>
 
           <Link
             href="/review"
-            className="text-sm text-muted-foreground hover:text-foreground"
+            aria-current={pathname === "/review" ? "page" : undefined}
+            className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${pathname === "/review"
+                ? "bg-[#e9eaf8] text-[#555b9b]"
+                : "text-[#65708a] hover:bg-[#f1f2f8]"
+              }`}
           >
-            To review ({reviewCount})
+            <span>To review</span>
+            <span className="rounded-full bg-[#f0f2f7] px-2 py-0.5 text-xs font-semibold tabular-nums text-[#77829a]">
+              {reviewCount.toLocaleString()}
+            </span>
           </Link>
 
-          <select
-            value={currentAgentId}
-            onChange={handleAgentChange}
-            className="h-9 rounded-md border px-3 text-sm"
-          >
-            {agents.map((agent) => (
-              <option
-                key={agent.id}
-                value={agent.id}
-              >
-                {agent.name}
-              </option>
-            ))}
-          </select>
+          {/* Agent selector */}
+          <div className="ml-1 border-l border-[#e3e6ef] pl-2 sm:ml-2 sm:pl-4">
+            <label htmlFor="current-agent" className="sr-only">
+              Current agent
+            </label>
+
+            <select
+              id="current-agent"
+              value={selectedAgent.id}
+              onChange={(event) =>
+                handleAgentChange(event.target.value)
+              }
+              className="h-10 min-w-[88px] rounded-xl border border-[#dce1ed] bg-white px-2 text-xs font-semibold text-[#35415f] outline-none transition-colors hover:border-[#b9c2df] focus-visible:ring-2 focus-visible:ring-[#a6acd9] sm:min-w-[120px] sm:px-3 sm:text-sm"
+            >
+              {agents.map((agent) => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </nav>
       </div>
     </header>
