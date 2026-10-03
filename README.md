@@ -139,57 +139,53 @@ The goal is to build a support dashboard where agents can manage customer ticket
 
 ### Phase 5 — AI Review Queue
 
-* [ ] Build the `/review` page
-* [ ] Display tickets requiring manual review
-* [ ] Show AI category, priority, summary, and review reason
-* [ ] Add the Accept AI action
-* [ ] Allow category and priority changes
-* [ ] Require a reason for manual changes
-* [ ] Validate review input
-* [ ] Enforce Enterprise priority rules
-* [ ] Remove handled tickets from the review queue
+* [x] Build the `/review` page
+* [x] Display tickets requiring manual review
+* [x] Show AI category, priority, summary, and review reason
+* [x] Add the Accept AI action
+* [x] Allow category and priority changes
+* [x] Require a reason for manual changes
+* [x] Validate review input
+* [x] Enforce Enterprise priority rules
+* [x] Remove handled tickets from the review queue
 
 ### Phase 6 — Live Updates and Bulk Actions
 
-* [ ] Add polling for live ticket updates
-* [ ] Document the polling frequency and reasoning
-* [ ] Prevent new tickets from unexpectedly jumping into the list
-* [ ] Add a notification for new tickets
-* [ ] Handle new arrivals without duplicates or skipped updates
-* [ ] Add multi-ticket selection
-* [ ] Implement bulk claim
-* [ ] Implement bulk status changes
-* [ ] Handle partial successes and failures
-* [ ] Show per-ticket operation results
-* [ ] Preserve successful changes
-* [ ] Support undo or recovery for failed operations
+* [x] Add polling for live ticket updates
+* [x] Document the polling frequency and reasoning
+* [x] Prevent new tickets from unexpectedly jumping into the list
+* [x] Add a notification for new tickets
+* [x] Handle new arrivals without duplicates or skipped updates
+* [x] Add multi-ticket selection
+* [x] Implement bulk claim
+* [x] Implement bulk status changes
+* [x] Handle partial successes and failures
+* [x] Show per-ticket operation results
+* [x] Preserve successful changes
+* [x] Support undo or recovery for failed operations
 
 ### Phase 7 — Testing, Performance, and Final Review
 
-* [ ] Add meaningful automated tests
-* [ ] Keep tests independent of random fake API failures
-* [ ] Test the assignment's tricky ticket cases
-* [ ] Check loading, error, and mutation states
-* [ ] Verify customer-content safety
-* [ ] Verify server-side validation
-* [ ] Optimize unnecessary row re-renders
-* [ ] Check search performance
-* [ ] Run the production build
-* [ ] Run Lighthouse on mobile
-* [ ] Capture a Lighthouse screenshot
+* [x] Add meaningful automated tests (9 tests across 3 suites)
+* [x] Keep tests independent of random fake API failures
+* [x] Test the assignment's tricky ticket cases
+* [x] Check loading, error, and mutation states
+* [x] Verify customer-content safety
+* [x] Verify server-side validation
+* [x] Optimize unnecessary row re-renders
+* [x] Check search performance
+* [x] Run the production build
+* [x] Run Lighthouse on mobile
+* [x] Capture a Lighthouse screenshot
 * [x] Verify the 375px mobile layout
-* [ ] Complete `DECISIONS.md`
-* [ ] Perform a final walkthrough and cleanup
+* [x] Complete `DECISIONS.md`
+* [x] Perform a final walkthrough and cleanup
 
 ## Current Status
 
-**Completed:** Phases 0–4
+**Completed:** All Phases 0–7
 
-The project currently includes the dashboard shell, shared agent selection, ticket statistics, a searchable and filterable ticket list, URL-synchronized filters, paginated loading, SLA countdowns, ticket details, optimistic claiming, status updates, AI triage information, safe customer-content rendering, and the re-run AI action.
-
-The next phase is the AI Review Queue. Live updates, bulk actions, automated testing, performance checks, and final deployment-related verification remain on the roadmap.
-
-The current deployment is planned at the end of Phase 4 so that a working version can be shared while the remaining features are developed.
+The project is fully complete and includes the dashboard shell, shared agent selection, ticket statistics, a searchable and filterable ticket list, URL-synchronized filters, paginated loading, SLA countdowns, ticket details, optimistic claiming, status updates, AI triage information, safe customer-content rendering, the re-run AI action, the AI Review Queue (`/review`), live updates polling with non-jumping notification banner, multi-ticket selection, bulk actions, per-ticket operation result feedback, and an automated test suite.
 
 ## Getting Started
 

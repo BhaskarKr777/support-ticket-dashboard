@@ -78,3 +78,35 @@ While testing on smaller screens, I noticed several areas that needed better tou
 - Viewing a 1100px wide table on a phone screen can be clumsy, so I created an adaptive card layout for mobile viewports while keeping the full data table for tablet and desktop screens.
 - On ticket detail pages, action buttons now stretch to full width on mobile screens to serve as comfortable touch targets.
 
+## Live Updates Strategy (10-second Polling)
+
+For live updates, I chose to poll `/api/tickets/updates?since=<timestamp>` every 10 seconds.
+
+Picked 10 seconds because the server-side update simulator generates or modifies tickets every 5 to 10 seconds. Polling every 10 seconds provides prompt updates while avoiding unnecessary network traffic.
+
+To prevent the list from jumping unexpectedly while an agent is reading or clicking a row, newly arrived tickets are held in a pending state rather than immediately shifting the UI. A banner appears at the top ("N new tickets arrived — Show new tickets"). When clicked, the new tickets prepend smoothly to the top of the list.
+
+If a live update modifies an existing visible ticket (such as a status change or claim by another agent), the specific row is updated in Redux without shifting scroll position.
+
+## Bulk Actions and Partial Failure Handling
+
+For bulk operations (Bulk Claim and Bulk Status Change), each selected ticket is sent as an independent API request using `Promise.allSettled`.
+
+I chose this approach because in a real-world multi-agent environment, some claims or status updates may succeed while others fail due to conflicts (such as HTTP 409 when another agent claims a ticket first).
+
+When a bulk action completes:
+- Successful operations update state immediately.
+- A per-ticket results modal breaks down exact outcomes for each ticket with green checkmarks or red failure explanations.
+- Agents can click "Retry Failed" to re-attempt only the failed items without affecting already succeeded tickets.
+
+## Automated Testing Strategy (Vitest)
+
+For Phase 7, I set up Vitest and built an automated test suite with 9 unit tests across 3 targeted test files:
+
+1. `sla-deadline.test.ts`: Verifies exact SLA hour calculations for P0–P3 priorities and tests `late`, `at_risk`, and `on_track` countdown states.
+2. `content-sanitization.test.ts`: Verifies that XSS script tags and `onerror` handlers are stripped out of customer bodies, while safe HTML tags are preserved. Also verifies that `javascript:` attachment URLs are flagged as unsafe.
+3. `triage-rules.test.ts`: Verifies business logic rules like Enterprise priority constraints (P0/P1 only), 10-character minimum review reason validation, and valid status transitions (`open` -> `in_progress` -> `resolved`).
+
+All tests are completely deterministic and isolated from simulated network latency or random server failures.
+
+

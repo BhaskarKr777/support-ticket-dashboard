@@ -156,6 +156,30 @@ const ticketSlice =
         state.total = 0;
         state.error = null;
       },
+      updateTicketInState(state, action: { payload: Ticket }) {
+        const index = state.tickets.findIndex(
+          (ticket) => ticket.id === action.payload.id,
+        );
+        if (index !== -1) {
+          state.tickets[index] = action.payload;
+        }
+      },
+      updateMultipleTicketsInState(state, action: { payload: Ticket[] }) {
+        const updateMap = new Map(
+          action.payload.map((ticket) => [ticket.id, ticket]),
+        );
+        state.tickets = state.tickets.map((ticket) =>
+          updateMap.has(ticket.id) ? updateMap.get(ticket.id)! : ticket,
+        );
+      },
+      prependNewTickets(state, action: { payload: Ticket[] }) {
+        const existingIds = new Set(state.tickets.map((t) => t.id));
+        const brandNew = action.payload.filter((t) => !existingIds.has(t.id));
+        if (brandNew.length > 0) {
+          state.tickets = [...brandNew, ...state.tickets];
+          state.total += brandNew.length;
+        }
+      },
     },
 
     extraReducers: (builder) => {
@@ -246,6 +270,9 @@ const ticketSlice =
 
 export const {
   clearTickets,
+  updateTicketInState,
+  updateMultipleTicketsInState,
+  prependNewTickets,
 } = ticketSlice.actions;
 
 export default ticketSlice.reducer;

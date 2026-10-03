@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -15,7 +14,10 @@ import type {
   RootState,
 } from "@/store/store";
 
-import { fetchTickets } from "@/store/ticketSlice";
+import {
+  fetchTickets,
+  updateMultipleTicketsInState,
+} from "@/store/ticketSlice";
 
 import {
   clearFilters,
@@ -29,6 +31,13 @@ import {
 import { TicketClock } from "@/components/tickets/ticket-clock";
 import { DeadlineCountdown } from "@/components/tickets/deadline-countdown";
 import { TicketFilters } from "@/components/tickets/ticket-filters";
+import { LiveUpdatesListener } from "@/components/tickets/live-updates-listener";
+import { BulkActionBar } from "@/components/tickets/bulk-action-bar";
+import {
+  BulkResultsModal,
+  type BulkOperationResult,
+} from "@/components/tickets/bulk-results-modal";
+import type { Ticket, TicketStatus } from "@/types/ticket";
 
 function getPriorityStyles(priority: string) {
   switch (priority) {
@@ -67,6 +76,10 @@ function formatLabel(value: string) {
 export default function TicketsPage() {
   const dispatch = useDispatch<AppDispatch>();
 
+  const currentAgentId = useSelector(
+    (state: RootState) => state.agent.currentAgentId
+  );
+
   const {
     tickets,
     loading,
@@ -82,10 +95,18 @@ export default function TicketsPage() {
   );
 
   const [searchInput, setSearchInput] = useState(
-  () => new URLSearchParams(
-    typeof window !== "undefined" ? window.location.search : ""
-  ).get("search") ?? ""
-);
+    () =>
+      new URLSearchParams(
+        typeof window !== "undefined" ? window.location.search : ""
+      ).get("search") ?? ""
+  );
+
+  // Bulk Selection State
+  const [selectedTicketIds, setSelectedTicketIds] = useState<string[]>([]);
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+  const [bulkResults, setBulkResults] = useState<BulkOperationResult[]>([]);
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  const [bulkActionName, setBulkActionName] = useState("");
 
   const initialized = useRef(false);
   const skipNextFilterFetch = useRef(false);
@@ -108,19 +129,15 @@ export default function TicketsPage() {
     if (initialFilters.search) {
       dispatch(setSearch(initialFilters.search));
     }
-
     if (initialFilters.status) {
       dispatch(setStatus(initialFilters.status));
     }
-
     if (initialFilters.priority) {
       dispatch(setPriority(initialFilters.priority));
     }
-
     if (initialFilters.category) {
       dispatch(setCategory(initialFilters.category));
     }
-
     if (initialFilters.triageDecision) {
       dispatch(setTriageDecision(initialFilters.triageDecision));
     }
@@ -149,7 +166,7 @@ export default function TicketsPage() {
     return () => window.clearTimeout(timeout);
   }, [dispatch, searchInput, filters.search]);
 
-  // Keep the URL synchronized with active filters.
+  // Keep URL synchronized with active filters.
   useEffect(() => {
     if (!initialized.current) return;
 
@@ -159,7 +176,6 @@ export default function TicketsPage() {
     if (filters.status) params.set("status", filters.status);
     if (filters.priority) params.set("priority", filters.priority);
     if (filters.category) params.set("category", filters.category);
-
     if (filters.triageDecision) {
       params.set("triage_decision", filters.triageDecision);
     }
@@ -173,7 +189,7 @@ export default function TicketsPage() {
     );
   }, [filters]);
 
-  // Fetch the first page whenever filters change.
+  // Fetch first page whenever filters change.
   useEffect(() => {
     if (!initialized.current) return;
 
@@ -182,6 +198,7 @@ export default function TicketsPage() {
       return;
     }
 
+    setSelectedTicketIds([]);
     dispatch(
       fetchTickets({
         page: 1,
@@ -191,12 +208,9 @@ export default function TicketsPage() {
     );
   }, [dispatch, filters]);
 
-  const hasMore =
-    !loading &&
-    !loadingMore &&
-    page < totalPages;
+  const hasMore = !loading && !loadingMore && page < totalPages;
 
-  // Load additional pages as the user scrolls.
+  // Infinite scroll
   useEffect(() => {
     const element = loadMoreRef.current;
 
@@ -237,6 +251,138 @@ export default function TicketsPage() {
     dispatch(clearFilters());
   }, [dispatch]);
 
+  // Selection Logic
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedTicketIds(tickets.map((t) => t.id));
+    } else {
+      setSelectedTicketIds([]);
+    }
+  };
+
+  const handleToggleSelectTicket = (id: string) => {
+    setSelectedTicketIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  // Bulk Operations Handlers
+  const runBulkOperation = async (
+    targetTicketIds: string[],
+    actionLabel: string,
+    operationFn: (ticket: Ticket) => Promise<Ticket>
+  ) => {
+    setIsBulkProcessing(true);
+    setBulkActionName(actionLabel);
+
+    const targetTickets = tickets.filter((t) => targetTicketIds.includes(t.id));
+    const results: BulkOperationResult[] = [];
+    const successfulTickets: Ticket[] = [];
+
+    const promises = targetTickets.map(async (ticket) => {
+      try {
+        const updated = await operationFn(ticket);
+        successfulTickets.push(updated);
+        results.push({
+          ticketId: ticket.id,
+          externalId: ticket.external_id,
+          subject: ticket.subject,
+          success: true,
+          updatedTicket: updated,
+        });
+      } catch (err) {
+        results.push({
+          ticketId: ticket.id,
+          externalId: ticket.external_id,
+          subject: ticket.subject,
+          success: false,
+          error: err instanceof Error ? err.message : "Operation failed",
+        });
+      }
+    });
+
+    await Promise.all(promises);
+
+    if (successfulTickets.length > 0) {
+      dispatch(updateMultipleTicketsInState(successfulTickets));
+    }
+
+    setBulkResults(results);
+    setBulkModalOpen(true);
+    setIsBulkProcessing(false);
+
+    // Keep only failed ones selected
+    const failedIds = results.filter((r) => !r.success).map((r) => r.ticketId);
+    setSelectedTicketIds(failedIds);
+  };
+
+  const handleBulkClaim = () => {
+    if (selectedTicketIds.length === 0) return;
+
+    runBulkOperation(selectedTicketIds, "Claim", async (ticket) => {
+      const res = await fetch(`/api/tickets/${encodeURIComponent(ticket.id)}/claim`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agent_id: currentAgentId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(
+          res.status === 409
+            ? data.error || "Already claimed by another agent"
+            : data.error || "Unable to claim"
+        );
+      }
+      return data.ticket;
+    });
+  };
+
+  const handleBulkStatusChange = (newStatus: TicketStatus) => {
+    if (selectedTicketIds.length === 0) return;
+
+    runBulkOperation(
+      selectedTicketIds,
+      `Status Change (${formatLabel(newStatus)})`,
+      async (ticket) => {
+        const res = await fetch(
+          `/api/tickets/${encodeURIComponent(ticket.id)}/status`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: newStatus }),
+          }
+        );
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Unable to update status");
+        }
+        return data.ticket;
+      }
+    );
+  };
+
+  const handleRetryFailed = (failedIds: string[]) => {
+    setBulkModalOpen(false);
+    if (bulkActionName.startsWith("Claim")) {
+      runBulkOperation(failedIds, "Claim", async (ticket) => {
+        const res = await fetch(`/api/tickets/${encodeURIComponent(ticket.id)}/claim`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ agent_id: currentAgentId }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Claim failed");
+        return data.ticket;
+      });
+    }
+  };
+
+  const allSelected =
+    tickets.length > 0 && selectedTicketIds.length === tickets.length;
+
   return (
     <main className="min-h-[calc(100vh-64px)] bg-[#f8f6ef] text-[#202943]">
       <TicketClock />
@@ -254,8 +400,8 @@ export default function TicketsPage() {
             </h1>
 
             <p className="mt-2 max-w-xl text-sm leading-6 text-[#68738a]">
-              Manage customer requests, review ticket details, and
-              keep track of SLA deadlines.
+              Manage customer requests, review ticket details, and keep track
+              of SLA deadlines.
             </p>
           </div>
 
@@ -267,8 +413,8 @@ export default function TicketsPage() {
             Showing{" "}
             <span className="font-semibold text-[#202943]">
               {tickets.length.toLocaleString()}
-            </span>
-            {" "}of{" "}
+            </span>{" "}
+            of{" "}
             <span className="font-semibold text-[#202943]">
               {total.toLocaleString()}
             </span>
@@ -283,13 +429,9 @@ export default function TicketsPage() {
             status={filters.status}
             onStatusChange={(value) => dispatch(setStatus(value))}
             priority={filters.priority}
-            onPriorityChange={(value) =>
-              dispatch(setPriority(value))
-            }
+            onPriorityChange={(value) => dispatch(setPriority(value))}
             category={filters.category}
-            onCategoryChange={(value) =>
-              dispatch(setCategory(value))
-            }
+            onCategoryChange={(value) => dispatch(setCategory(value))}
             triageDecision={filters.triageDecision}
             onTriageDecisionChange={(value) =>
               dispatch(setTriageDecision(value))
@@ -297,6 +439,9 @@ export default function TicketsPage() {
             onClear={handleClearFilters}
           />
         </div>
+
+        {/* Live Updates Notification Banner */}
+        <LiveUpdatesListener />
 
         {/* Initial loading state */}
         {loading && (
@@ -364,67 +509,81 @@ export default function TicketsPage() {
           </div>
         )}
 
-        {/* Ticket table */}
         {/* Ticket table and mobile cards */}
         {!loading && !error && tickets.length > 0 && (
           <>
             <div className="overflow-hidden rounded-2xl border border-[#e1e4ec] bg-white shadow-[0_5px_22px_rgba(32,41,67,0.045)]">
               <div className="flex flex-col gap-1 border-b border-[#e8eaf0] bg-[#edf2f8] px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
-                <h2 className="font-semibold text-[#27334f]">
-                  All tickets
-                </h2>
+                <h2 className="font-semibold text-[#27334f]">All tickets</h2>
 
                 <p className="text-xs text-[#77829a]">
-                  Select a ticket to view its details
+                  Select a ticket to view its details or select multiple for bulk actions
                 </p>
               </div>
 
               {/* Mobile Card List (< md screens) */}
               <div className="divide-y divide-[#edf0f4] md:hidden">
-                {tickets.map((ticket) => (
-                  <article key={ticket.id} className="p-4 transition-colors hover:bg-[#f8f9fe]">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-[#8992a5]">
-                          <span>Ext: {ticket.external_id}</span>
-                          <span>•</span>
-                          <span>{ticket.customer_plan}</span>
+                {tickets.map((ticket) => {
+                  const isSelected = selectedTicketIds.includes(ticket.id);
+                  return (
+                    <article
+                      key={ticket.id}
+                      className={`p-4 transition-colors ${
+                        isSelected ? "bg-indigo-50/50" : "hover:bg-[#f8f9fe]"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleToggleSelectTicket(ticket.id)}
+                          className="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5 text-xs text-[#8992a5]">
+                            <span>Ext: {ticket.external_id}</span>
+                            <span>•</span>
+                            <span>{ticket.customer_plan}</span>
+                          </div>
+
+                          <Link
+                            href={`/tickets/${ticket.id}`}
+                            className="mt-1.5 block break-words font-semibold text-[#303c5b] transition-colors hover:text-[#7779bd]"
+                          >
+                            {ticket.subject
+                              ? ticket.subject.replace(/<[^>]*>/g, "")
+                              : "(No subject)"}
+                          </Link>
                         </div>
 
-                        <Link
-                          href={`/tickets/${ticket.id}`}
-                          className="mt-1.5 block break-words font-semibold text-[#303c5b] transition-colors hover:text-[#7779bd]"
-                        >
-                          {ticket.subject
-                            ? ticket.subject.replace(/<[^>]*>/g, "")
-                            : "(No subject)"}
-                        </Link>
-                      </div>
-
-                      <span
-                        className={`shrink-0 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold ${getPriorityStyles(ticket.priority)}`}
-                      >
-                        {ticket.priority}
-                      </span>
-                    </div>
-
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#f0f2f7] pt-2.5 text-xs text-[#68738a]">
-                      <div className="flex flex-wrap items-center gap-2">
                         <span
-                          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold capitalize ${getStatusStyles(ticket.status)}`}
+                          className={`shrink-0 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold ${getPriorityStyles(ticket.priority)}`}
                         >
-                          {formatLabel(ticket.status)}
+                          {ticket.priority}
                         </span>
-                        <span className="capitalize">{formatLabel(ticket.category)}</span>
                       </div>
 
-                      <DeadlineCountdown
-                        createdAt={ticket.created_at}
-                        priority={ticket.priority}
-                      />
-                    </div>
-                  </article>
-                ))}
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#f0f2f7] pt-2.5 text-xs text-[#68738a]">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold capitalize ${getStatusStyles(ticket.status)}`}
+                          >
+                            {formatLabel(ticket.status)}
+                          </span>
+                          <span className="capitalize">
+                            {formatLabel(ticket.category)}
+                          </span>
+                        </div>
+
+                        <DeadlineCountdown
+                          createdAt={ticket.created_at}
+                          priority={ticket.priority}
+                        />
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
 
               {/* Desktop / Tablet Table View (>= md screens) */}
@@ -432,106 +591,156 @@ export default function TicketsPage() {
                 <table className="w-full min-w-[1100px] text-left text-sm">
                   <thead className="border-b border-[#e5e8ef] bg-[#f6f8fb]">
                     <tr>
-                      <th scope="col" className="px-5 py-4 font-semibold text-[#64708a]">
+                      <th scope="col" className="w-10 px-4 py-4">
+                        <input
+                          type="checkbox"
+                          checked={allSelected}
+                          onChange={handleSelectAll}
+                          aria-label="Select all tickets"
+                          className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-5 py-4 font-semibold text-[#64708a]"
+                      >
                         Subject
                       </th>
-                      <th scope="col" className="px-4 py-4 font-semibold text-[#64708a]">
+                      <th
+                        scope="col"
+                        className="px-4 py-4 font-semibold text-[#64708a]"
+                      >
                         Plan
                       </th>
-                      <th scope="col" className="px-4 py-4 font-semibold text-[#64708a]">
+                      <th
+                        scope="col"
+                        className="px-4 py-4 font-semibold text-[#64708a]"
+                      >
                         Category
                       </th>
-                      <th scope="col" className="px-4 py-4 font-semibold text-[#64708a]">
+                      <th
+                        scope="col"
+                        className="px-4 py-4 font-semibold text-[#64708a]"
+                      >
                         Priority
                       </th>
-                      <th scope="col" className="px-4 py-4 font-semibold text-[#64708a]">
+                      <th
+                        scope="col"
+                        className="px-4 py-4 font-semibold text-[#64708a]"
+                      >
                         Status
                       </th>
-                      <th scope="col" className="px-4 py-4 font-semibold text-[#64708a]">
+                      <th
+                        scope="col"
+                        className="px-4 py-4 font-semibold text-[#64708a]"
+                      >
                         Agent
                       </th>
-                      <th scope="col" className="px-4 py-4 font-semibold text-[#64708a]">
+                      <th
+                        scope="col"
+                        className="px-4 py-4 font-semibold text-[#64708a]"
+                      >
                         Created
                       </th>
-                      <th scope="col" className="px-4 py-4 font-semibold text-[#64708a]">
+                      <th
+                        scope="col"
+                        className="px-4 py-4 font-semibold text-[#64708a]"
+                      >
                         SLA deadline
                       </th>
                     </tr>
                   </thead>
 
                   <tbody className="divide-y divide-[#edf0f4]">
-                    {tickets.map((ticket) => (
-                      <tr
-                        key={ticket.id}
-                        className="transition-colors hover:bg-[#f5f6fc]"
-                      >
-                        <td className="max-w-[350px] px-5 py-4">
-                          <Link
-                            href={`/tickets/${ticket.id}`}
-                            className="break-words font-semibold leading-5 text-[#303c5b] transition-colors hover:text-[#7779bd] hover:underline"
-                          >
-                            {ticket.subject
-                              ? ticket.subject.replace(/<[^>]*>/g, "")
-                              : "(No subject)"}
-                          </Link>
+                    {tickets.map((ticket) => {
+                      const isSelected = selectedTicketIds.includes(ticket.id);
+                      return (
+                        <tr
+                          key={ticket.id}
+                          className={`transition-colors ${
+                            isSelected
+                              ? "bg-indigo-50/60"
+                              : "hover:bg-[#f5f6fc]"
+                          }`}
+                        >
+                          <td className="px-4 py-4">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleToggleSelectTicket(ticket.id)}
+                              aria-label={`Select ticket ${ticket.external_id}`}
+                              className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                            />
+                          </td>
 
-                          <div className="mt-1.5 flex flex-wrap gap-x-2 text-xs text-[#8992a5]">
-                            <span>External: {ticket.external_id}</span>
-                            <span>Internal: {ticket.id}</span>
-                          </div>
-                        </td>
+                          <td className="max-w-[350px] px-5 py-4">
+                            <Link
+                              href={`/tickets/${ticket.id}`}
+                              className="break-words font-semibold leading-5 text-[#303c5b] transition-colors hover:text-[#7779bd] hover:underline"
+                            >
+                              {ticket.subject
+                                ? ticket.subject.replace(/<[^>]*>/g, "")
+                                : "(No subject)"}
+                            </Link>
 
-                        <td className="px-4 py-4 capitalize text-[#68738a]">
-                          {ticket.customer_plan}
-                        </td>
+                            <div className="mt-1.5 flex flex-wrap gap-x-2 text-xs text-[#8992a5]">
+                              <span>External: {ticket.external_id}</span>
+                              <span>Internal: {ticket.id}</span>
+                            </div>
+                          </td>
 
-                        <td className="px-4 py-4 text-[#68738a]">
-                          {formatLabel(ticket.category)}
-                        </td>
+                          <td className="px-4 py-4 capitalize text-[#68738a]">
+                            {ticket.customer_plan}
+                          </td>
 
-                        <td className="px-4 py-4">
-                          <span
-                            className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold ${getPriorityStyles(ticket.priority)}`}
-                          >
-                            {ticket.priority}
-                          </span>
-                        </td>
+                          <td className="px-4 py-4 text-[#68738a]">
+                            {formatLabel(ticket.category)}
+                          </td>
 
-                        <td className="px-4 py-4">
-                          <span
-                            className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${getStatusStyles(ticket.status)}`}
-                          >
-                            {formatLabel(ticket.status)}
-                          </span>
-                        </td>
+                          <td className="px-4 py-4">
+                            <span
+                              className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold ${getPriorityStyles(
+                                ticket.priority
+                              )}`}
+                            >
+                              {ticket.priority}
+                            </span>
+                          </td>
 
-                        <td className="px-4 py-4 text-[#68738a]">
-                          {ticket.assigned_to ?? "Unassigned"}
-                        </td>
+                          <td className="px-4 py-4">
+                            <span
+                              className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${getStatusStyles(
+                                ticket.status
+                              )}`}
+                            >
+                              {formatLabel(ticket.status)}
+                            </span>
+                          </td>
 
-                        <td className="whitespace-nowrap px-4 py-4 text-[#68738a]">
-                          {new Date(ticket.created_at).toLocaleString()}
-                        </td>
+                          <td className="px-4 py-4 text-[#68738a]">
+                            {ticket.assigned_to ?? "Unassigned"}
+                          </td>
 
-                        <td className="whitespace-nowrap px-4 py-4">
-                          <DeadlineCountdown
-                            createdAt={ticket.created_at}
-                            priority={ticket.priority}
-                          />
-                        </td>
-                      </tr>
-                    ))}
+                          <td className="whitespace-nowrap px-4 py-4 text-[#68738a]">
+                            {new Date(ticket.created_at).toLocaleString()}
+                          </td>
+
+                          <td className="whitespace-nowrap px-4 py-4">
+                            <DeadlineCountdown
+                              createdAt={ticket.created_at}
+                              priority={ticket.priority}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
             </div>
 
             {/* Infinite-scroll sentinel */}
-            <div
-              ref={loadMoreRef}
-              className="h-10"
-              aria-hidden="true"
-            />
+            <div ref={loadMoreRef} className="h-10" aria-hidden="true" />
 
             {loadingMore && (
               <div className="flex items-center justify-center gap-3 py-6 text-sm text-[#77829a]">
@@ -548,6 +757,24 @@ export default function TicketsPage() {
           </>
         )}
       </div>
+
+      {/* Floating Bulk Action Bar */}
+      <BulkActionBar
+        selectedCount={selectedTicketIds.length}
+        onClearSelection={() => setSelectedTicketIds([])}
+        onBulkClaim={handleBulkClaim}
+        onBulkStatusChange={handleBulkStatusChange}
+        isProcessing={isBulkProcessing}
+      />
+
+      {/* Bulk Operations Per-Ticket Results Modal */}
+      <BulkResultsModal
+        isOpen={bulkModalOpen}
+        onClose={() => setBulkModalOpen(false)}
+        onRetryFailed={handleRetryFailed}
+        results={bulkResults}
+        actionName={bulkActionName}
+      />
     </main>
   );
 }

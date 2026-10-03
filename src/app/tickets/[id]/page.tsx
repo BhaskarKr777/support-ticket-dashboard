@@ -461,7 +461,7 @@ export default function TicketDetailsPage({ params }: Props) {
                       type="button"
                       onClick={handleClaim}
                       disabled={busy}
-                      className="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-[#6656a5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#514386] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                      className="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-[#6656a5] px-4 py-2 text-sm font-semibold !text-white shadow-sm transition hover:bg-[#514386] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                     >
                       {actionLoading ? "Claiming..." : "Claim ticket"}
                     </button>
@@ -472,7 +472,7 @@ export default function TicketDetailsPage({ params }: Props) {
                       type="button"
                       onClick={() => handleStatusChange("in_progress")}
                       disabled={busy}
-                      className="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-[#6656a5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#514386] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                      className="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-[#6656a5] px-4 py-2 text-sm font-semibold !text-white shadow-sm transition hover:bg-[#514386] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                     >
                       {actionLoading ? "Updating..." : "Start work"}
                     </button>
@@ -483,7 +483,7 @@ export default function TicketDetailsPage({ params }: Props) {
                       type="button"
                       onClick={() => handleStatusChange("resolved")}
                       disabled={busy}
-                      className="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-[#287d6b] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#206456] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                      className="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-[#287d6b] px-4 py-2 text-sm font-semibold !text-white shadow-sm transition hover:bg-[#206456] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                     >
                       {actionLoading ? "Updating..." : "Resolve ticket"}
                     </button>
