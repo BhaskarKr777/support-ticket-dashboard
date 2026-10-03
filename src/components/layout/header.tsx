@@ -73,18 +73,18 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#dfe3ed] bg-[#fffefa]">
-      <div className="mx-auto flex min-h-[68px] w-full max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
+      <div className="mx-auto flex min-h-[60px] w-full max-w-[1600px] flex-wrap items-center justify-between gap-2 px-3 py-2 sm:min-h-[68px] sm:gap-3 sm:px-6 sm:py-0 lg:px-10">
         {/* Brand */}
         <Link
           href="/tickets"
-          className="flex shrink-0 items-center gap-3"
+          className="flex shrink-0 items-center gap-2.5"
           aria-label="Support Dashboard home"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#e6e9f8] text-[#6569a9]">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#e6e9f8] text-[#6569a9] sm:h-9 sm:w-9">
             <svg
               viewBox="0 0 24 24"
               fill="none"
-              className="h-5 w-5"
+              className="h-4 w-4 sm:h-5 sm:w-5"
               aria-hidden="true"
             >
               <path
@@ -120,14 +120,14 @@ export function Header() {
             </svg>
           </span>
 
-          <span className="text-sm font-bold tracking-tight text-[#202943] sm:text-[15px]">
+          <span className="text-xs font-bold tracking-tight text-[#202943] min-[360px]:text-sm sm:text-[15px]">
             Support Dashboard
           </span>
         </Link>
 
         {/* Navigation */}
         <nav
-          className="flex items-center gap-1 sm:gap-3"
+          className="flex flex-wrap items-center gap-1 sm:gap-3"
           aria-label="Main navigation"
         >
           <Link
@@ -135,13 +135,13 @@ export function Header() {
             aria-current={
               pathname.startsWith("/tickets") ? "page" : undefined
             }
-            className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${pathname.startsWith("/tickets")
+            className={`inline-flex min-h-9 items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs font-medium transition-colors sm:min-h-10 sm:gap-2 sm:px-3 sm:py-2 sm:text-sm ${pathname.startsWith("/tickets")
                 ? "bg-[#e9eaf8] text-[#555b9b]"
                 : "text-[#65708a] hover:bg-[#f1f2f8]"
               }`}
           >
             <span>My tickets</span>
-            <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold tabular-nums text-[#555b9b]">
+            <span className="rounded-full bg-white px-1.5 py-0.5 text-xs font-semibold tabular-nums text-[#555b9b] sm:px-2">
               {myTicketsCount.toLocaleString()}
             </span>
           </Link>
@@ -149,19 +149,19 @@ export function Header() {
           <Link
             href="/review"
             aria-current={pathname === "/review" ? "page" : undefined}
-            className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${pathname === "/review"
+            className={`inline-flex min-h-9 items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs font-medium transition-colors sm:min-h-10 sm:gap-2 sm:px-3 sm:py-2 sm:text-sm ${pathname === "/review"
                 ? "bg-[#e9eaf8] text-[#555b9b]"
                 : "text-[#65708a] hover:bg-[#f1f2f8]"
               }`}
           >
             <span>To review</span>
-            <span className="rounded-full bg-[#f0f2f7] px-2 py-0.5 text-xs font-semibold tabular-nums text-[#77829a]">
+            <span className="rounded-full bg-[#f0f2f7] px-1.5 py-0.5 text-xs font-semibold tabular-nums text-[#77829a] sm:px-2">
               {reviewCount.toLocaleString()}
             </span>
           </Link>
 
           {/* Agent selector */}
-          <div className="ml-1 border-l border-[#e3e6ef] pl-2 sm:ml-2 sm:pl-4">
+          <div className="ml-0.5 border-l border-[#e3e6ef] pl-1.5 sm:ml-2 sm:pl-4">
             <label htmlFor="current-agent" className="sr-only">
               Current agent
             </label>
@@ -172,7 +172,7 @@ export function Header() {
               onChange={(event) =>
                 handleAgentChange(event.target.value)
               }
-              className="h-10 min-w-[88px] rounded-xl border border-[#dce1ed] bg-white px-2 text-xs font-semibold text-[#35415f] outline-none transition-colors hover:border-[#b9c2df] focus-visible:ring-2 focus-visible:ring-[#a6acd9] sm:min-w-[120px] sm:px-3 sm:text-sm"
+              className="h-9 min-w-[76px] rounded-xl border border-[#dce1ed] bg-white px-1.5 text-xs font-semibold text-[#35415f] outline-none transition-colors hover:border-[#b9c2df] focus-visible:ring-2 focus-visible:ring-[#a6acd9] sm:h-10 sm:min-w-[120px] sm:px-3 sm:text-sm"
             >
               {agents.map((agent) => (
                 <option key={agent.id} value={agent.id}>

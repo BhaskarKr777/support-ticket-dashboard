@@ -461,7 +461,7 @@ export default function TicketDetailsPage({ params }: Props) {
                       type="button"
                       onClick={handleClaim}
                       disabled={busy}
-                      className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#6656a5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#514386] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-[#6656a5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#514386] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                     >
                       {actionLoading ? "Claiming..." : "Claim ticket"}
                     </button>
@@ -472,7 +472,7 @@ export default function TicketDetailsPage({ params }: Props) {
                       type="button"
                       onClick={() => handleStatusChange("in_progress")}
                       disabled={busy}
-                      className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#6656a5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#514386] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-[#6656a5] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#514386] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                     >
                       {actionLoading ? "Updating..." : "Start work"}
                     </button>
@@ -483,7 +483,7 @@ export default function TicketDetailsPage({ params }: Props) {
                       type="button"
                       onClick={() => handleStatusChange("resolved")}
                       disabled={busy}
-                      className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#287d6b] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#206456] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-[#287d6b] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#206456] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                     >
                       {actionLoading ? "Updating..." : "Resolve ticket"}
                     </button>
@@ -494,7 +494,7 @@ export default function TicketDetailsPage({ params }: Props) {
                       type="button"
                       onClick={() => handleStatusChange("open")}
                       disabled={busy}
-                      className="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#c9c0e8] hover:bg-[#f2effb] hover:text-[#514386] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#c9c0e8] hover:bg-[#f2effb] hover:text-[#514386] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                     >
                       {actionLoading ? "Updating..." : "Reopen ticket"}
                     </button>
@@ -504,7 +504,7 @@ export default function TicketDetailsPage({ params }: Props) {
                     type="button"
                     onClick={handleRetriage}
                     disabled={busy}
-                    className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8d0f0] bg-[#f0edfa] px-4 py-2 text-sm font-semibold text-[#514386] transition hover:border-[#c9bde9] hover:bg-[#e7e1f7] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-[#d8d0f0] bg-[#f0edfa] px-4 py-2 text-sm font-semibold text-[#514386] transition hover:border-[#c9bde9] hover:bg-[#e7e1f7] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                   >
                     {retriageLoading ? "Re-running AI..." : "Re-run AI"}
                   </button>

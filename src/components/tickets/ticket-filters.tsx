@@ -50,16 +50,16 @@ export function TicketFilters({
 }: TicketFiltersProps) {
   return (
     <section className="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 px-5 py-4">
+      <div className="border-b border-slate-100 px-4 py-3.5 sm:px-5 sm:py-4">
         <h2 className="font-semibold text-slate-900">
           Find tickets
         </h2>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-xs text-slate-500 sm:text-sm">
           Narrow the list using keywords and ticket attributes.
         </p>
       </div>
 
-      <div className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-3.5 p-4 sm:gap-4 sm:p-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <div className="xl:col-span-2">
           <label className={labelClasses} htmlFor="ticket-search">
             Search
@@ -146,7 +146,7 @@ export function TicketFilters({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/70 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2.5 border-t border-slate-100 bg-slate-50/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <p className="text-xs text-slate-500">
           Use the filters above to narrow your ticket list.
         </p>
@@ -154,7 +154,7 @@ export function TicketFilters({
         <button
           type="button"
           onClick={onClear}
-          className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          className="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 sm:w-auto"
         >
           Clear filters
         </button>

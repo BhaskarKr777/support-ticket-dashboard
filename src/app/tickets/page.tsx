@@ -365,10 +365,11 @@ export default function TicketsPage() {
         )}
 
         {/* Ticket table */}
+        {/* Ticket table and mobile cards */}
         {!loading && !error && tickets.length > 0 && (
           <>
             <div className="overflow-hidden rounded-2xl border border-[#e1e4ec] bg-white shadow-[0_5px_22px_rgba(32,41,67,0.045)]">
-              <div className="flex flex-col gap-1 border-b border-[#e8eaf0] bg-[#edf2f8] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-1 border-b border-[#e8eaf0] bg-[#edf2f8] px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
                 <h2 className="font-semibold text-[#27334f]">
                   All tickets
                 </h2>
@@ -378,7 +379,56 @@ export default function TicketsPage() {
                 </p>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Mobile Card List (< md screens) */}
+              <div className="divide-y divide-[#edf0f4] md:hidden">
+                {tickets.map((ticket) => (
+                  <article key={ticket.id} className="p-4 transition-colors hover:bg-[#f8f9fe]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-[#8992a5]">
+                          <span>Ext: {ticket.external_id}</span>
+                          <span>•</span>
+                          <span>{ticket.customer_plan}</span>
+                        </div>
+
+                        <Link
+                          href={`/tickets/${ticket.id}`}
+                          className="mt-1.5 block break-words font-semibold text-[#303c5b] transition-colors hover:text-[#7779bd]"
+                        >
+                          {ticket.subject
+                            ? ticket.subject.replace(/<[^>]*>/g, "")
+                            : "(No subject)"}
+                        </Link>
+                      </div>
+
+                      <span
+                        className={`shrink-0 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold ${getPriorityStyles(ticket.priority)}`}
+                      >
+                        {ticket.priority}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#f0f2f7] pt-2.5 text-xs text-[#68738a]">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold capitalize ${getStatusStyles(ticket.status)}`}
+                        >
+                          {formatLabel(ticket.status)}
+                        </span>
+                        <span className="capitalize">{formatLabel(ticket.category)}</span>
+                      </div>
+
+                      <DeadlineCountdown
+                        createdAt={ticket.created_at}
+                        priority={ticket.priority}
+                      />
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              {/* Desktop / Tablet Table View (>= md screens) */}
+              <div className="hidden overflow-x-auto md:block">
                 <table className="w-full min-w-[1100px] text-left text-sm">
                   <thead className="border-b border-[#e5e8ef] bg-[#f6f8fb]">
                     <tr>
