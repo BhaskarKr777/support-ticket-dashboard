@@ -139,15 +139,15 @@ The goal is to build a support dashboard where agents can manage customer ticket
 
 ### Phase 5 — AI Review Queue
 
-* [x] Build the `/review` page
-* [x] Display tickets requiring manual review
-* [x] Show AI category, priority, summary, and review reason
-* [x] Add the Accept AI action
-* [x] Allow category and priority changes
-* [x] Require a reason for manual changes
-* [x] Validate review input
-* [x] Enforce Enterprise priority rules
-* [x] Remove handled tickets from the review queue
+* [ ] Build the `/review` page
+* [ ] Display tickets requiring manual review
+* [ ] Show AI category, priority, summary, and review reason
+* [ ] Add the Accept AI action
+* [ ] Allow category and priority changes
+* [ ] Require a reason for manual changes
+* [ ] Validate review input
+* [ ] Enforce Enterprise priority rules
+* [ ] Remove handled tickets from the review queue
 
 ### Phase 6 — Live Updates and Bulk Actions
 
@@ -183,11 +183,11 @@ The goal is to build a support dashboard where agents can manage customer ticket
 
 ## Current Status
 
-**Completed:** Phases 0–5
+**Completed:** Phases 0–4
 
-The project currently includes the dashboard shell, shared agent selection, ticket statistics, a searchable and filterable ticket list, URL-synchronized filters, paginated loading, SLA countdowns, ticket details, optimistic claiming, status updates, AI triage information, safe customer-content rendering, the re-run AI action, and the complete AI Review Queue (`/review`) with manual review overrides, validation, and Enterprise SLA protection.
+The project currently includes the dashboard shell, shared agent selection, ticket statistics, a searchable and filterable ticket list, URL-synchronized filters, paginated loading, SLA countdowns, ticket details, optimistic claiming, status updates, AI triage information, safe customer-content rendering, and the re-run AI action.
 
-The next phase is Phase 6: Live Updates and Bulk Actions. Live updates, bulk actions, automated testing, performance checks, and final deployment-related verification remain on the roadmap.
+The next phase is the AI Review Queue. Live updates, bulk actions, automated testing, performance checks, and final deployment-related verification remain on the roadmap.
 
 The current deployment is planned at the end of Phase 4 so that a working version can be shared while the remaining features are developed.
 

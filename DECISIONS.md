@@ -56,12 +56,25 @@ Customer-provided HTML is sanitized before rendering, and unsafe attachment URLs
 
 This was done specifically to handle the intentionally unsafe test cases in the assignment without allowing customer-controlled content to execute code in the dashboard.
 
-## CSS and Project Structure
+## Phase 5 — AI Review Queue
 
-Due to the limited time available before submission, the styling has been kept basic. The focus was on implementing the required functionality, handling API validation, managing ticket data, and covering the important edge cases from the assignment.
+For Phase 5, I built the `/review` page to give agents a dedicated space to check tickets where the AI model suggested `manual_review`.
 
-The current UI uses basic CSS and Tailwind utility classes to provide a consistent layout and usable interface across the ticket list and detail pages. However, the visual design has not been fully polished, and some areas could benefit from improved spacing, responsiveness, and visual consistency.
+When viewing the queue, agents can see the AI's category, priority, summary, and reason for flagging the ticket. If the AI got it right, clicking "Accept AI" immediately updates the decision to `auto_accept` and removes the ticket from the review queue.
 
-The project file structure is also not fully optimized. Files and components are organized sufficiently for the current implementation, but the structure could be improved further by refining component boundaries, grouping related logic more consistently, and removing any unnecessary duplication.
+If an agent needs to override the category or priority, I made it mandatory to enter a reason of at least 10 characters before submitting. I also ensured that Enterprise tier tickets cannot be downgraded below `P1` (allowing only `P0` or `P1`), which is enforced both in the form validation and on the server.
 
-Given the deadline, I prioritized completing the core functionality and handling the assignment's key requirements over extensive UI refinement and architectural cleanup. These areas remain opportunities for improvement.
+## Typography and Styling Refinements
+
+To make the dashboard look cleaner and more modern, I switched the primary font family across the entire app to **Manrope** using `next/font/google`.
+
+I also ran into an issue where dark primary buttons rendered text in an unreadable dark color. This happened because unlayered global reset styles (`button { color: inherit; }`) were taking precedence over Tailwind utility classes. I fixed this by wrapping the default HTML resets inside `@layer base` in `globals.css` so utility classes like `text-white` function properly.
+
+## Mobile Responsiveness Improvements
+
+While testing on smaller screens, I noticed several areas that needed better touch support and responsive layouts:
+
+- The top header navigation was prone to crowding on small mobile devices, so I updated it to wrap neatly without horizontal scroll clipping.
+- Viewing a 1100px wide table on a phone screen can be clumsy, so I created an adaptive card layout for mobile viewports while keeping the full data table for tablet and desktop screens.
+- On ticket detail pages, action buttons now stretch to full width on mobile screens to serve as comfortable touch targets.
+
